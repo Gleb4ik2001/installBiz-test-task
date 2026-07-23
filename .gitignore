@@ -1,11 +1,28 @@
-# Окружкение
+# Окружение
 venv/
+
 # Секреты
 .env
+
 # Кэш
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .pytest_cache/
+
+# БД & директория с файлами
 downloaded_files
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker и логи системы
+*.log
+.DS_Store
+Thumbs.db
