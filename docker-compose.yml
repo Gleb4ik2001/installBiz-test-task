@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: installbiz_app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - db_data:/app/data_db
+      - app_downloads:/app/downloaded_files
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  app_downloads:
