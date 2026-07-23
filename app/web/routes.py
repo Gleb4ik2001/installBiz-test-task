@@ -15,7 +15,17 @@ templates = Jinja2Templates(directory="app/web/templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def page_download(request: Request):
-    return templates.TemplateResponse(request=request,name="download.html",context={"state": download_state})
+    return templates.TemplateResponse(
+        request=request,
+        name="download.html",
+        context={
+            "status_message": download_state.get("status_message", "Процесс не запущен"),
+            "start_time_nsk": download_state.get("start_time_nsk", "Не запущен"),
+            "found_names_count": download_state.get("found_names_count", 0),
+            "downloaded_count": download_state.get("downloaded_count", 0),
+            "is_running": download_state.get("is_running", False)
+        }
+    )
 
 @router.get("/files", response_class=HTMLResponse)
 async def page_files(

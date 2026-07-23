@@ -32,11 +32,12 @@
     <h2>Процесс скачивания каталога</h2>
 
     <div class="card">
-        <button id="startBtn" onclick="startDownload()">Скачать данные</button>
+        <button id="startBtn" onclick="startDownload()" {% if is_running %}disabled{% endif %}>Скачать данные</button>
         <hr>
-        <p><strong>Статус:</strong> <span id="msg">-</span></p>
-        <p><strong>Время старта (НСК):</strong> <span id="startTime">-</span></p>
-        <p><strong>Метрика:</strong> Получено <span id="foundN">0</span> названий файлов, скачано <span id="downM">0</span></p>
+        <p><strong>Статус:</strong> <span id="msg">{{ status_message }}</span></p>
+        <p><strong>Время старта (НСК):</strong> <span id="startTime">{{ start_time_nsk or 'Не запущен' }}</span></p>
+        <p><strong>Метрика:</strong> Получено <span id="foundN">{{ found_names_count }}</span> названий файлов, скачано
+            <span id="downM">{{ downloaded_count }}</span></p>
     </div>
 
     <script>
@@ -45,8 +46,8 @@
                 document.getElementById('startBtn').disabled = true;
                 await fetch('/api/start-download', { method: 'POST' });
                 updateStatus();
-            } catch (err) {
-                console.error("Ошибка при запуске:", err);
+            } catch (e) {
+                console.error("Ошибка запуска:", e);
             }
         }
 
@@ -56,43 +57,27 @@
                 if (!res.ok) return;
 
                 const data = await res.json();
-                
-                const msgElem = document.getElementById('msg');
-                let rawStatus = data.status_message || "Ожидание запуска";
-                
-                if (data.error_message) {
-                    rawStatus = `Ошибка: ${data.error_message}`;
-                } 
-                else if (data.retry_after > 0) {
-                    rawStatus = `Лимит запросов. Ожидание ${data.retry_after} сек...`;
-                }
 
-                let badge = '<span class="badge bg-secondary">Готов</span>';
-                if (data.is_running) {
-                    badge = data.retry_after > 0 
-                        ? '<span class="badge bg-warning">Пауза</span>' 
-                        : '<span class="badge bg-info">В процессе</span>';
-                } else if (data.found_names_count > 0 && data.downloaded_count === data.found_names_count) {
-                    badge = '<span class="badge bg-success">Завершено</span>';
-                } else if (data.error_message) {
-                    badge = '<span class="badge bg-danger">Ошибка</span>';
-                }
+                // Читаем ровно те поля, что объявлены в download_state
+                const statusMsg = data.status_message || "Процесс не запущен";
+                const startTime = data.start_time_nsk || "Не запущен";
+                const foundN = data.found_names_count || 0;
+                const downM = data.downloaded_count || 0;
+                const isRunning = data.is_running || false;
 
-                msgElem.innerHTML = `${badge} ${rawStatus}`;
-
-                document.getElementById('startTime').innerText = data.start_time_nsk || 'Не запущен';
-                document.getElementById('foundN').innerText = data.found_names_count || 0;
-                document.getElementById('downM').innerText = data.downloaded_count || 0;
-                
-                document.getElementById('startBtn').disabled = data.is_running;
+                // Обновляем элементы DOM
+                document.getElementById('msg').innerText = statusMsg;
+                document.getElementById('startTime').innerText = startTime;
+                document.getElementById('foundN').innerText = foundN;
+                document.getElementById('downM').innerText = downM;
+                document.getElementById('startBtn').disabled = isRunning;
 
             } catch (err) {
                 console.error("Ошибка обновления статуса:", err);
             }
         }
 
-        updateStatus();
-
+        // Запускаем периодический опрос каждые 1.5 секунды
         setInterval(updateStatus, 1500);
     </script>
 </body>
