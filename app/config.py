@@ -1,14 +1,17 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    TARGET_API_URL: str = "http://91.199.149.128:18001"
-    CANDIDATE_ID: str = "fsdn43fb4b3f"
-    DOWNLOAD_DIR: str = "downloaded_files"
-    DB_PATH: str = "database.db"
+    TARGET_API_URL: str 
+    CANDIDATE_ID: str
+    DOWNLOAD_DIR: str
+    DB_PATH: str
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
 settings = Settings()
 
