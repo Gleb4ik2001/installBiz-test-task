@@ -1,7 +1,12 @@
+import os
 import aiosqlite
 from app.config import settings
 
 async def init_db():
+    db_dir = os.path.dirname(settings.DB_PATH)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS files (
