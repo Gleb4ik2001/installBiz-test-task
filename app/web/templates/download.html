@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Скачивание файлов</title>
+    <style>
+        body { font-family: sans-serif; margin: 30px; }
+        .nav { margin-bottom: 20px; }
+        .card { border: 1px solid #ccc; padding: 20px; border-radius: 8px; width: 400px; }
+        button { padding: 10px 15px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <strong>Страница скачивания</strong> | <a href="/files">Скачанные файлы</a>
+    </div>
+
+    <h2>Процесс скачивания каталога</h2>
+
+    <div class="card">
+        <button id="startBtn" onclick="startDownload()">Скачать данные</button>
+        <hr>
+        <p><strong>Статус:</strong> <span id="msg">-</span></p>
+        <p><strong>Время старта (НСК):</strong> <span id="startTime">-</span></p>
+        <p><strong>Метрика:</strong> Получено <span id="foundN">0</span> названий файлов, скачано <span id="downM">0</span></p>
+    </div>
+
+    <script>
+        async function startDownload() {
+            await fetch('/start-download', { method: 'POST' });
+            document.getElementById('startBtn').disabled = true;
+        }
+
+        async function updateStatus() {
+            const res = await fetch('/download-status');
+            const data = await res.json();
+            
+            document.getElementById('msg').innerText = data.message;
+            document.getElementById('startTime').innerText = data.start_time_nsk || 'Не запущен';
+            document.getElementById('foundN').innerText = data.found_names_count;
+            document.getElementById('downM').innerText = data.downloaded_count;
+            
+            document.getElementById('startBtn').disabled = data.is_running;
+        }
+
+        setInterval(updateStatus, 1000);
+    </script>
+</body>
+</html>

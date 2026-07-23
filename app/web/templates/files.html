@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Скачанные файлы</title>
+    <style>
+        body { font-family: sans-serif; margin: 30px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .controls { margin: 15px 0; }
+        .results { margin-top: 20px; background: #f9f9f9; padding: 15px; }
+    </style>
+</head>
+<body>
+    <div>
+        <a href="/">Страница скачивания</a> | <strong>Скачанные файлы</strong>
+    </div>
+
+    <h2>Список скачанных файлов (Всего: {{ total_files }})</h2>
+
+    <form id="calcForm">
+        <div class="controls">
+            <label><input type="radio" name="selection_type" value="selected" checked> Выбранные галочками</label>
+            <label><input type="radio" name="selection_type" value="page"> Все на этой странице</label>
+            <label><input type="radio" name="selection_type" value="all"> Вообще все</label>
+            <br><br>
+            <button type="button" onclick="runCalculation()">Произвести расчёты</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                    <th>Имя файла</th>
+                    <th>Время скачивания</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for filename, downloaded_at in files %}
+                <tr>
+                    <td><input type="checkbox" name="filenames" value="{{ filename }}" class="file-checkbox"></td>
+                    <td>{{ filename }}</td>
+                    <td>{{ downloaded_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+
+    <!-- Пагинация -->
+    <div style="margin-top: 15px;">
+        {% if page > 1 %}
+            <a href="/files?page={{ page - 1 }}">« Назад</a>
+        {% endif %}
+        Страница {{ page }} из {{ total_pages }}
+        {% if page < total_pages %}
+            <a href="/files?page={{ page + 1 }}">Вперёд »</a>
+        {% endif %}
+    </div>
+
+    <!-- Результаты расчетов -->
+    <div id="results" class="results" style="display:none;">
+        <h3>Результаты расчётов</h3>
+        <p>Обработано файлов: <span id="processedCount"></span></p>
+        
+        <h4>Общая статистика по всем выбранным:</h4>
+        <pre id="totalStats"></pre>
+
+        <h4>Статистика по каждому файлу:</h4>
+        <pre id="fileStats" style="max-height: 200px; overflow-y: scroll;"></pre>
+    </div>
+
+    <script>
+        function toggleAll(source) {
+            checkboxes = document.getElementsByClassName('file-checkbox');
+            for(var i=0, n=checkboxes.length; i<n; i++) {
+                checkboxes[i].checked = source.checked;
+            }
+        }
+
+        async function runCalculation() {
+            const form = document.getElementById('calcForm');
+            const formData = new FormData(form);
+
+            const res = await fetch('/calculate', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('processedCount').innerText = data.processed_count;
+            document.getElementById('totalStats').innerText = JSON.stringify(data.total_stats, null, 2);
+            document.getElementById('fileStats').innerText = JSON.stringify(data.file_stats, null, 2);
+        }
+    </script>
+</body>
+</html>
