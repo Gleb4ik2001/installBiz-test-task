@@ -6,8 +6,22 @@
     <style>
         body { font-family: sans-serif; margin: 30px; }
         .nav { margin-bottom: 20px; }
-        .card { border: 1px solid #ccc; padding: 20px; border-radius: 8px; width: 400px; }
+        .card { border: 1px solid #ccc; padding: 20px; border-radius: 8px; width: 420px; }
         button { padding: 10px 15px; font-size: 16px; cursor: pointer; }
+        button:disabled { cursor: not-allowed; opacity: 0.6; }
+        .badge { 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            color: #fff; 
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .bg-info { background-color: #0d6efd; }
+        .bg-warning { background-color: #ffc107; color: #000; }
+        .bg-success { background-color: #198754; }
+        .bg-danger { background-color: #dc3545; }
+        .bg-secondary { background-color: #6c757d; }
     </style>
 </head>
 <body>
@@ -27,23 +41,59 @@
 
     <script>
         async function startDownload() {
-            await fetch('/api/start-download', { method: 'POST' });
-            document.getElementById('startBtn').disabled = true;
+            try {
+                document.getElementById('startBtn').disabled = true;
+                await fetch('/api/start-download', { method: 'POST' });
+                updateStatus();
+            } catch (err) {
+                console.error("Ошибка при запуске:", err);
+            }
         }
 
         async function updateStatus() {
-            const res = await fetch('/api/download-status');
-            const data = await res.json();
-            
-            document.getElementById('msg').innerText = data.message;
-            document.getElementById('startTime').innerText = data.start_time_nsk || 'Не запущен';
-            document.getElementById('foundN').innerText = data.found_names_count;
-            document.getElementById('downM').innerText = data.downloaded_count;
-            
-            document.getElementById('startBtn').disabled = data.is_running;
+            try {
+                const res = await fetch('/api/download-status');
+                if (!res.ok) return;
+
+                const data = await res.json();
+                
+                const msgElem = document.getElementById('msg');
+                let rawStatus = data.status_message || "Ожидание запуска";
+                
+                if (data.error_message) {
+                    rawStatus = `Ошибка: ${data.error_message}`;
+                } 
+                else if (data.retry_after > 0) {
+                    rawStatus = `Лимит запросов. Ожидание ${data.retry_after} сек...`;
+                }
+
+                let badge = '<span class="badge bg-secondary">Готов</span>';
+                if (data.is_running) {
+                    badge = data.retry_after > 0 
+                        ? '<span class="badge bg-warning">Пауза</span>' 
+                        : '<span class="badge bg-info">В процессе</span>';
+                } else if (data.found_names_count > 0 && data.downloaded_count === data.found_names_count) {
+                    badge = '<span class="badge bg-success">Завершено</span>';
+                } else if (data.error_message) {
+                    badge = '<span class="badge bg-danger">Ошибка</span>';
+                }
+
+                msgElem.innerHTML = `${badge} ${rawStatus}`;
+
+                document.getElementById('startTime').innerText = data.start_time_nsk || 'Не запущен';
+                document.getElementById('foundN').innerText = data.found_names_count || 0;
+                document.getElementById('downM').innerText = data.downloaded_count || 0;
+                
+                document.getElementById('startBtn').disabled = data.is_running;
+
+            } catch (err) {
+                console.error("Ошибка обновления статуса:", err);
+            }
         }
 
-        setInterval(updateStatus, 1000);
+        updateStatus();
+
+        setInterval(updateStatus, 1500);
     </script>
 </body>
 </html>
