@@ -82,7 +82,7 @@
             const form = document.getElementById('calcForm');
             const formData = new FormData(form);
 
-            const res = await fetch('/calculate', {
+            const res = await fetch('/api/calculate', {
                 method: 'POST',
                 body: formData
             });

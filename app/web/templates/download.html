@@ -27,12 +27,12 @@
 
     <script>
         async function startDownload() {
-            await fetch('/start-download', { method: 'POST' });
+            await fetch('/api/start-download', { method: 'POST' });
             document.getElementById('startBtn').disabled = true;
         }
 
         async function updateStatus() {
-            const res = await fetch('/download-status');
+            const res = await fetch('/api/download-status');
             const data = await res.json();
             
             document.getElementById('msg').innerText = data.message;
@@ -43,7 +43,7 @@
             document.getElementById('startBtn').disabled = data.is_running;
         }
 
-        setInterval(updateStatus, 1000);
+        setInterval(updateStatus, 10);
     </script>
 </body>
 </html>
