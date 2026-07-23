@@ -1,6 +1,9 @@
 import os
+
 import aiosqlite
+
 from app.config import settings
+
 
 async def init_db():
     db_dir = os.path.dirname(settings.DB_PATH)
@@ -17,6 +20,7 @@ async def init_db():
             )
         """)
         await db.commit()
+
 
 async def get_db():
     async with aiosqlite.connect(settings.DB_PATH) as db:

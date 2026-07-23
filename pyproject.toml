@@ -1,0 +1,42 @@
+[tool.ruff]
+target-version = "py313"
+
+line-length = 88
+
+# Исключения (директории, которые не нужно проверять)
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__"
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort (автоматическая сортировка импортов)
+    "B",   # flake8-bugbear (поиск потенциальных багов)
+    "C90", # mccabe (сложность кода)
+    "UP",  # pyupgrade (предлагает синтаксис более новых версий Python)
+]
+
+# Игнорируемые правила
+ignore = [
+    "B008", # Допускаем функции в дефолтных аргументах (нужно для Depends/Query/Form в FastAPI)
+]
+
+# Разрешаем неиспользуемые импорты в __init__.py файлах
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+# Разделение импортов по группам для чистоты
+combine-as-imports = true
+
+[tool.ruff.format]
+# Настройки автоформатирования (замена Black)
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
