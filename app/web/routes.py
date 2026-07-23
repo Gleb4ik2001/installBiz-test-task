@@ -15,7 +15,7 @@ templates = Jinja2Templates(directory="app/web/templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def page_download(request: Request):
-    return templates.TemplateResponse("download.html", {"request": request, "state": download_state})
+    return templates.TemplateResponse(request=request,name="download.html",context={"state": download_state})
 
 @router.get("/files", response_class=HTMLResponse)
 async def page_files(
@@ -39,14 +39,17 @@ async def page_files(
 
     total_pages = max(1, (total_files + limit - 1) // limit)
 
-    return templates.TemplateResponse("files.html", {
-        "request": request,
-        "files": files,
-        "page": page,
-        "limit": limit,
-        "total_pages": total_pages,
-        "total_files": total_files
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="files.html",
+        context={
+            "files": files,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages,
+            "total_files": total_files
+        }
+    )
 
 # --- API Маршруты ---
 
