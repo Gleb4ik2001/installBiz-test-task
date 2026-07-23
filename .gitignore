@@ -1,2 +1,10 @@
+# Окружкение
 venv/
+# Секреты
 .env
+# Кэш
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
